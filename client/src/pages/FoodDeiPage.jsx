@@ -23,6 +23,7 @@ import {
   eliminarPlatoApi,
   confirmarReservaApi,
   resetearTurnoApi,
+  restaurarStockApi,
   reiniciarReservaApi
 } from '../api/foodDeiApi';
 
@@ -101,17 +102,15 @@ export default function FoodDeiPage() {
     }
   };
 
-  // Restaura todo el stock de la cocina a sus valores originales (12, 8, 5, 15) y el saldo a $25.00
+  // SOLO restaura el stock de la cocina (12, 8, 5, 15) sin modificar el saldo ni el temporizador
   const manejarRestaurarCocina = async () => {
     setErrorMsg('');
     setExitoMsg('');
     try {
       setCargando(true);
-      const data = await reiniciarReservaApi();
+      const data = await restaurarStockApi();
       setMenu(data.menu);
-      setReserva(data.reserva);
-      setSegundos(120);
-      setExitoMsg('Inventario de cocina y saldo restaurados a sus valores iniciales.');
+      setExitoMsg(data.mensaje);
     } catch (error) {
       setErrorMsg(error.message);
     } finally {

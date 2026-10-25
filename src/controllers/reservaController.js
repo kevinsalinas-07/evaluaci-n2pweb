@@ -129,14 +129,13 @@ function obtenerMenuInicial() {
     reserva.itemsReservados = [];
     reserva.total = 0.00;
     return res.json({
-      mensaje: '¡Reserva confirmada! El stock quedó bloqueado. Puedes iniciar una Nueva Reserva.',
+      mensaje: '¡Reserva confirmada! El stock quedó bloqueado.',
       reserva
     });
   };
   
-  // POST /api/reserva/reset (Nueva Reserva: restablece saldo a $25 y mantiene el stock ya confirmado)
+  // POST /api/reserva/reset (Nueva Reserva: restablece saldo a $25 y mantiene el stock confirmado)
   const resetearTurno = (req, res) => {
-    // Si quedaron platillos en la bandeja sin confirmar, los devolvemos al stock
     reserva.itemsReservados.forEach((item) => {
       const plato = menu.find((p) => p.id === item.id);
       if (plato) {
@@ -144,7 +143,6 @@ function obtenerMenuInicial() {
       }
     });
   
-    // Reiniciamos el saldo a $25.00, vaciamos el arreglo y el total
     reserva = obtenerReservaInicial();
   
     return res.json({
@@ -154,7 +152,16 @@ function obtenerMenuInicial() {
     });
   };
   
-  // POST /api/reserva/reiniciar (Restaura todo de fábrica: stock inicial + saldo $25.00)
+  // POST /api/reserva/restaurar-stock (SOLO restaura el stock de la cocina, sin tocar el saldo ni la reserva)
+  const restaurarStock = (req, res) => {
+    menu = obtenerMenuInicial();
+    return res.json({
+      mensaje: 'Stock de cocina restaurado a sus valores iniciales.',
+      menu
+    });
+  };
+  
+  // POST /api/reserva/reiniciar (Usado cuando expira el temporizador de 2 minutos)
   const reiniciarReserva = (req, res) => {
     menu = obtenerMenuInicial();
     reserva = obtenerReservaInicial();
@@ -169,5 +176,6 @@ function obtenerMenuInicial() {
     eliminarPlato,
     confirmarReserva,
     resetearTurno,
+    restaurarStock,
     reiniciarReserva
   };

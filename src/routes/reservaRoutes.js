@@ -8,6 +8,7 @@ const {
   eliminarPlato,
   confirmarReserva,
   resetearTurno,
+  restaurarStock,
   reiniciarReserva
 } = require('../controllers/reservaController');
 
@@ -19,6 +20,7 @@ router.delete('/reserva/eliminar/:id', eliminarPlato);
 
 router.post('/reserva/confirmar', confirmarReserva);
 router.post('/reserva/reset', resetearTurno);
+router.post('/reserva/restaurar-stock', restaurarStock);
 router.post('/reserva/reiniciar', reiniciarReserva);
 
 module.exports = router;

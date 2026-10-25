@@ -15,7 +15,6 @@ function obtenerMenuInicial() {
     };
   }
   
-  // Estado en memoria del menú y la reserva activa
   let menu = obtenerMenuInicial();
   let reserva = obtenerReservaInicial();
   
@@ -121,14 +120,7 @@ function obtenerMenuInicial() {
     return res.json(reserva);
   };
   
-  // POST /api/reserva/reiniciar
-  const reiniciarReserva = (req, res) => {
-    menu = obtenerMenuInicial();
-    reserva = obtenerReservaInicial();
-    return res.json({ menu, reserva });
-  };
-  
-  // POST /api/reserva/confirmar
+  // POST /api/reserva/confirmar (Bloquea el stock consumido y limpia la bandeja)
   const confirmarReserva = (req, res) => {
     if (reserva.itemsReservados.length === 0) {
       return res.status(400).json({ error: 'La bandeja de reserva está vacía' });
@@ -136,7 +128,37 @@ function obtenerMenuInicial() {
   
     reserva.itemsReservados = [];
     reserva.total = 0.00;
-    return res.json({ mensaje: '¡Reserva confirmada con éxito!', reserva });
+    return res.json({
+      mensaje: '¡Reserva confirmada! El stock quedó bloqueado. Puedes iniciar una Nueva Reserva.',
+      reserva
+    });
+  };
+  
+  // POST /api/reserva/reset (Nueva Reserva: restablece saldo a $25 y mantiene el stock ya confirmado)
+  const resetearTurno = (req, res) => {
+    // Si quedaron platillos en la bandeja sin confirmar, los devolvemos al stock
+    reserva.itemsReservados.forEach((item) => {
+      const plato = menu.find((p) => p.id === item.id);
+      if (plato) {
+        plato.stock += item.cantidad;
+      }
+    });
+  
+    // Reiniciamos el saldo a $25.00, vaciamos el arreglo y el total
+    reserva = obtenerReservaInicial();
+  
+    return res.json({
+      mensaje: 'Nueva reserva iniciada: saldo restablecido a $25.00 y temporizador reiniciado.',
+      menu,
+      reserva
+    });
+  };
+  
+  // POST /api/reserva/reiniciar (Restaura todo de fábrica: stock inicial + saldo $25.00)
+  const reiniciarReserva = (req, res) => {
+    menu = obtenerMenuInicial();
+    reserva = obtenerReservaInicial();
+    return res.json({ menu, reserva });
   };
   
   module.exports = {
@@ -145,6 +167,7 @@ function obtenerMenuInicial() {
     agregarPlato,
     actualizarPorciones,
     eliminarPlato,
-    reiniciarReserva,
-    confirmarReserva
+    confirmarReserva,
+    resetearTurno,
+    reiniciarReserva
   };

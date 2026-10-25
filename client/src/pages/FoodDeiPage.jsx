@@ -21,8 +21,9 @@ import {
   agregarPlatoApi,
   actualizarPorcionesApi,
   eliminarPlatoApi,
-  reiniciarReservaApi,
-  confirmarReservaApi
+  confirmarReservaApi,
+  resetearTurnoApi,
+  reiniciarReservaApi
 } from '../api/foodDeiApi';
 
 export default function FoodDeiPage() {
@@ -75,6 +76,42 @@ export default function FoodDeiPage() {
       setReserva(data.reserva);
       setExitoMsg('');
       setErrorMsg('Tiempo agotado (02:00). Se cerró la reserva y se restauró el stock.');
+    } catch (error) {
+      setErrorMsg(error.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Reinicia el saldo a $25.00 manteniendo descontado el stock ya confirmado
+  const manejarNuevaReserva = async () => {
+    setErrorMsg('');
+    setExitoMsg('');
+    try {
+      setCargando(true);
+      const data = await resetearTurnoApi();
+      setMenu(data.menu);
+      setReserva(data.reserva);
+      setSegundos(120);
+      setExitoMsg(data.mensaje);
+    } catch (error) {
+      setErrorMsg(error.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Restaura todo el stock de la cocina a sus valores originales (12, 8, 5, 15) y el saldo a $25.00
+  const manejarRestaurarCocina = async () => {
+    setErrorMsg('');
+    setExitoMsg('');
+    try {
+      setCargando(true);
+      const data = await reiniciarReservaApi();
+      setMenu(data.menu);
+      setReserva(data.reserva);
+      setSegundos(120);
+      setExitoMsg('Inventario de cocina y saldo restaurados a sus valores iniciales.');
     } catch (error) {
       setErrorMsg(error.message);
     } finally {
@@ -166,8 +203,8 @@ export default function FoodDeiPage() {
           Tu saldo actual: ${Number(reserva.saldo).toFixed(2)}
         </span>
 
-        <div className="d-flex align-items-center gap-3">
-          {cargando && <span className="fw-bold text-primary">Cargando...</span>}
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          {cargando && <span className="fw-bold text-primary me-2">Cargando...</span>}
 
           <Badge color={segundos <= 20 ? 'danger' : 'primary'} className="p-2 fs-6">
             Tiempo: {min}:{seg}
@@ -176,6 +213,26 @@ export default function FoodDeiPage() {
           <Badge color="dark" pill className="p-2 fs-6">
             Total de tu Reserva: ${Number(reserva.total).toFixed(2)}
           </Badge>
+
+          <Button
+            color="dark"
+            outline
+            size="sm"
+            disabled={cargando}
+            onClick={manejarNuevaReserva}
+          >
+            Nueva Reserva ($25.00)
+          </Button>
+
+          <Button
+            color="secondary"
+            outline
+            size="sm"
+            disabled={cargando}
+            onClick={manejarRestaurarCocina}
+          >
+            Restaurar Stock Cocina
+          </Button>
         </div>
       </Alert>
 
